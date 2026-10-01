@@ -1,0 +1,11 @@
+[project]
+name = "recipe-app"
+version = "0.1.0"
+dependencies = [
+	"fastapi[standard]",
+	"uv",
+	"recipe_scrapers",
+]
+
+[tool.fastapi]
+entrypoint = "main:app"
