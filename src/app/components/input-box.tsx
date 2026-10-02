@@ -21,6 +21,7 @@ export default function InputBox({input}: Props) {
 
 const styles = StyleSheet.create({
     textContainer: {
+        fontFamily: "Sans-serif",
         borderRadius: 10,
         padding: 5,
         borderColor: "#000",

@@ -12,9 +12,9 @@ export default function SubmitButton() {
 
 const styles = StyleSheet.create({
     buttonContainer: {
-        marginTop: 35,
         width: 100,
         height: 50,
+        marginTop: 20,
         marginHorizontal: 20,
         alignContent: "center",
         justifyContent: "center",
@@ -31,6 +31,6 @@ const styles = StyleSheet.create({
     text: {
         color: "#fff",
         fontSize: 18,
-        fontFamily: "Monospace"
+        fontFamily: "Sans-serif"
     },
 });
