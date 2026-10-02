@@ -1,20 +1,43 @@
 import { Text, View, StyleSheet } from "react-native";
+import { useState } from "react";
 import InputBox from "@/app/components/input-box";
 import SubmitButton from "@/app/components/submit-button";
 import { Link } from "expo-router";
 
 export default function LoginScreen() {
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}$/;
+  const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const [togglePassword, setTogglePassword] = useState<boolean>(true);
+
+  // Function to receive Validation change and do something with it idk yet
+  const handleEmailValidation = (isValid: boolean, text: string) => {
+    if (isValid) { console.log(text); }
+  }
+
+  // Will be used when I implement show password option
+  function toggleShowPassword(showPassword: boolean) {
+    setTogglePassword(!showPassword);
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.loginContainer}>
         <Text style={styles.loginText}>Log In</Text>
         <View style={styles.fieldContainer}>
           <Text style={styles.text}>Email</Text>
-          <InputBox input="Enter your email"/>
+          <InputBox 
+            pattern={emailPattern} 
+            input="Enter your email"
+            onChangeValidation={handleEmailValidation}
+          />
         </View>
         <View style={styles.fieldContainer}>
           <Text style={styles.text}>Password</Text>
-          <InputBox input="Enter your password"/>
+          <InputBox
+            pattern={passwordPattern}
+            secureTextEntry={togglePassword}
+            input="Enter your password"
+          />
         </View>
         <View>
           <Link href="/sign-in" style={styles.button}>
