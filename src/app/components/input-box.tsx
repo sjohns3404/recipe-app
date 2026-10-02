@@ -10,7 +10,7 @@ export default function InputBox({input}: Props) {
  
     return (
         <TextInput
-            style={styles.textBox}
+            style={styles.textContainer}
             onChangeText={onChangeText}
             placeholder={input}
             placeholderTextColor={"#000"}
@@ -20,12 +20,12 @@ export default function InputBox({input}: Props) {
 }
 
 const styles = StyleSheet.create({
-    textBox: {
+    textContainer: {
+        borderRadius: 10,
         padding: 5,
         borderColor: "#000",
         borderWidth: 2,
-        margin: 10,
-        width: 250,
+        width: "100%",
         color: "#000",
         height: 40,
     }
