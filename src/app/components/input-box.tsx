@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TextInput, StyleSheet } from "react-native";
+import { Text, TextInput, StyleSheet } from "react-native";
 
 type Props = {
     input: string;
@@ -13,14 +13,18 @@ export default function InputBox({
     input,
     secureTextEntry = false,
     pattern,
-    errorMessage = "Invalid input",
+    errorMessage = "",
     onChangeValidation
 }: Props) {
     const [text, onChangeText] = useState<string>("");
     const [isValid, setIsValid] = useState<boolean>(false);
     const [isTouched, setIsTouched] = useState<boolean>(false);
+    const [errorMsg, setErrorMsg] = useState<string>("");
+
+    
 
     const handleChange = (value: string) => {
+        // On first letter typed set red border to true
         if (!isTouched) {
             setIsTouched(true); 
         }
@@ -31,6 +35,12 @@ export default function InputBox({
         const validPattern = pattern ? (value.length > 0 && pattern.test(value)) : true;
         setIsValid(validPattern);
 
+        if (validPattern) {
+            setErrorMsg("");
+        } else {
+            setErrorMsg(errorMessage);
+        }
+
         // Pass validity status and current text back to LoginScreen
         if (onChangeValidation) {
             onChangeValidation(validPattern, value);
@@ -40,18 +50,21 @@ export default function InputBox({
     const showErrorBorder = !isValid && isTouched;
  
     return (
-        <TextInput
-            style={[
-                styles.textContainer,
-                showErrorBorder && styles.errorBorder
-            ]}
-            onChangeText={handleChange}
-            value={text}
-            placeholder={input}
-            placeholderTextColor={"#000"}
-            maxLength={40}
-            secureTextEntry={secureTextEntry}
-        />
+        <>
+            <TextInput
+                style={[
+                    styles.textContainer,
+                    showErrorBorder && styles.errorBorder
+                ]}
+                onChangeText={handleChange}
+                value={text}
+                placeholder={input}
+                placeholderTextColor={"#000"}
+                maxLength={40}
+                secureTextEntry={secureTextEntry}
+            />
+            <Text style={styles.errorText}>{errorMsg}</Text>
+        </>
     );
 }
 
@@ -68,5 +81,10 @@ const styles = StyleSheet.create({
     },
     errorBorder: {
         borderColor: "#db4b4b",
+    },
+    errorText: {
+        color: "#db4b4b",
+        fontFamily: "Sans-serif",
+        fontSize: 12,
     }
 });

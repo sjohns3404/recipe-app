@@ -8,6 +8,7 @@ export default function LoginScreen() {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}$/;
   const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   const [togglePassword, setTogglePassword] = useState<boolean>(true);
+  const [passwordReqs, showPasswordReqs] = useState<boolean>(false);
 
   // Function to receive Validation change and do something with it idk yet
   const handleEmailValidation = (isValid: boolean, text: string) => {
@@ -37,6 +38,7 @@ export default function LoginScreen() {
             pattern={passwordPattern}
             secureTextEntry={togglePassword}
             input="Enter your password"
+            errorMessage="Password needs at least 8 characters, a capital letter, a number, and special character."
           />
         </View>
         <View>
@@ -72,7 +74,7 @@ const styles = StyleSheet.create({
   fieldContainer: {
     width: "70%",
     maxWidth: 300,
-    marginBottom: 16,
+    marginBottom: "5%",
   },
   loginText: {
     marginBottom: "20%",
