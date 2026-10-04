@@ -1,9 +1,14 @@
 import { StyleSheet, View, Text, Pressable } from "react-native";
 
-export default function SubmitButton() {
+type Props = {
+    isDisabled: boolean;
+    onPress: () => void;
+}
+
+export default function SubmitButton({isDisabled, onPress}: Props) {
     return (
         <View style={styles.buttonContainer}>
-            <Pressable style={styles.button} onPress={() => alert("Submitted")}>
+            <Pressable style={styles.button} onPress={onPress}>
                 <Text style={styles.text}>Submit</Text>
             </Pressable>
         </View>
