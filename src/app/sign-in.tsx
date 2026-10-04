@@ -69,12 +69,12 @@ export default function LoginScreen() {
           />
         </View>
         <View>
-          <Link href="/" style={styles.button}>
-            Log in
-          </Link>
+            <Link href="/">
+                <Text style={styles.text}>Already have an account? </Text>
+                <Text style={styles.button}>Log in</Text>
+            </Link>
         </View>
         <SubmitButton isEnabled={isDataValid} onPress={pressSubmit}/>
-        <Text style={styles.failedText}>{failedCredentials}</Text>
       </View>
     </View>
   );
@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
   text: {
     color: "#000",
     fontFamily: "Sans-serif",
+    fontSize: 14,
   },
   failedText: {
     marginTop: "2%",

@@ -64,13 +64,13 @@ export default function LoginScreen() {
             pattern={passwordPattern}
             secureTextEntry={togglePassword}
             input="Enter your password"
-            errorMessage="Password needs at least 8 characters, a capital letter, a number, and special character."
             onChangeValidation={handlePasswordValidation}
           />
         </View>
         <View>
-          <Link href="/sign-in" style={styles.button}>
-            Sign up
+          <Link href="/sign-in"> 
+            <Text style={styles.text}>Don't have an account? </Text>
+            <Text style={styles.button}>Sign up</Text>
           </Link>
         </View>
         <SubmitButton isEnabled={isDataValid} onPress={pressSubmit}/>
@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
   text: {
     color: "#000",
     fontFamily: "Sans-serif",
+    fontSize: 14,
   },
   failedText: {
     marginTop: "2%",
