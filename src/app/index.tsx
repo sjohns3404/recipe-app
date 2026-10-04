@@ -12,6 +12,9 @@ export default function LoginScreen() {
   // State for email and password values and validity
   const [emailData, setEmailData] = useState({text: "", isValid: false});
   const [passwordData, setPasswordData] = useState({text: "", isValid: false});
+  
+  const [failedCredentials, setFailedCredentials] = useState<string>("");
+
 
   // Function to receive Validation change and do something with it idk yet
   const handleEmailValidation = (isValid: boolean, text: string) => {
@@ -31,12 +34,14 @@ export default function LoginScreen() {
 
   function pressSubmit() {
     if (!isDataValid) {
-      alert("Email or password is not valid!");
+      setFailedCredentials("Email or password is incorrect");
       return;
     }
 
+    setFailedCredentials("");
+
     console.log("Ready to send data to FastAPI!", {
-      email: emailData.text,
+      email: emailData.text.toLowerCase(),
       password: passwordData.text,
     });
   }
@@ -68,7 +73,8 @@ export default function LoginScreen() {
             Sign up
           </Link>
         </View>
-        <SubmitButton isDisabled={isDataValid} onPress={pressSubmit}/>
+        <SubmitButton isEnabled={isDataValid} onPress={pressSubmit}/>
+        <Text style={styles.failedText}>{failedCredentials}</Text>
       </View>
     </View>
   );
@@ -107,6 +113,12 @@ const styles = StyleSheet.create({
   text: {
     color: "#000",
     fontFamily: "Sans-serif",
+  },
+  failedText: {
+    marginTop: "2%",
+    color: "#db4b4b",
+    fontFamily: "Sans-serif",
+    fontSize: 12,
   },
   button: {
     fontSize: 14,
