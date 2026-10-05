@@ -81,6 +81,6 @@ async def login_user(user: UserAccount):
             detail="Invalid email or password."
         )
 
-    print(f"User logging in: {user.email}")
+    print(f"User logged in: {user.email}")
     return {"message": "Login successful", "email": user.email}
 
