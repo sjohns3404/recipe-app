@@ -70,7 +70,7 @@ async def login_user(user: UserAccount):
     if user.email not in mock_db:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid email or password"
+            detail="Your email is not registered"
         )
 
     stored_hash = mock_db[user.email]
@@ -78,7 +78,7 @@ async def login_user(user: UserAccount):
     if not verify_password(user.password, stored_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password."
+            detail="Your password is incorrect"
         )
 
     print(f"User logged in: {user.email}")
