@@ -4,6 +4,8 @@ import InputBox from "@/app/components/input-box";
 import SubmitButton from "@/app/components/submit-button";
 import { Link } from "expo-router";
 
+const API_URL = "http://192.168.1.25:8000/login/";
+
 export default function LoginScreen() {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}$/;
   const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -32,18 +34,36 @@ export default function LoginScreen() {
     setTogglePassword(!showPassword);
   }
 
-  function pressSubmit() {
+  async function pressSubmit() {
     if (!isDataValid) {
       setFailedCredentials("Email or password is incorrect");
       return;
     }
 
     setFailedCredentials("");
+    try {
+      const response = await fetch (API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailData.text.toLowerCase(),
+          password: passwordData.text,
+        }),
+      });
 
-    console.log("Ready to send data to FastAPI!", {
-      email: emailData.text.toLowerCase(),
-      password: passwordData.text,
-    });
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Success:", data);
+      } else {
+        setFailedCredentials(data.detail || "Log in failed");
+      }
+    } catch(error) {
+      console.error("Network error:", error);
+      setFailedCredentials("Unable to join network");
+    }
   }
 
   return (
