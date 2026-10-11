@@ -1,6 +1,6 @@
 from typing import Annotated
 import psycopg
-from fastapi import FastAPI, Query, HTTPException, status
+from fastapi import FastAPI, Query, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import bcrypt
 from pydantic import BaseModel
@@ -12,6 +12,7 @@ DATABASE_URL = "postgresql://sjohns@localhost:5432/recipe_db"
 def get_db():
     # Open connection for the request and automatically close when done
     with psycopg.connect(DATABASE_URL) as conn:
+        print(f"-> PYTHON CONNECTED TO: Host={conn.info.host}, Port={conn.info.port}, DB={conn.info.dbname}, PID={conn.info.backend_pid}")
         yield conn
 
 class UserAccount(BaseModel):
@@ -46,20 +47,26 @@ app.add_middleware(
 )
 
 @app.post("/signup/")
-async def sign_in_user(user: UserAccount):
-    # Check if user exists in db
-    if user.email in mock_db:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An account with this email already exists."
+async def sign_in_user(user: UserAccount, conn = Depends(get_db)):
+    print(f"CONNECTED TO DB: {conn.info.dbname} on host {conn.info.host}")
+    with conn.cursor() as cur:
+        cur.execute("SELECT id FROM users WHERE email = %s", (user.email,))
+        if cur.fetchone():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with that email already exists."
+            )
+        
+        # Hash the password and store data in db
+        hashed_pwd = hash_password(user.password)
+
+        cur.execute(
+            """
+            INSERT INTO users (email, hashed_password) VALUES(%s, %s)
+            """,
+            (user.email, hashed_pwd)
         )
-
-    # Hash the password and store data in db
-    hashed_pwd = hash_password(user.password)
-    mock_db[user.email] = hashed_pwd
-
-    print(f"User registered: {user.email}")
-    print(f"Current users in memory: {list(mock_db.keys())}")
+        conn.commit()
 
     return {"message": "User registered successfully", "email": user.email}
 
