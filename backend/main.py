@@ -1,19 +1,18 @@
-# Blank database main.py file
-# Currently learning everything about FastAPI on their site and will be using this to test.
-
-# Python can use async/await in order to creat asynchronous functiosn on the backend
-# A coroutine is what is returned from an async await function
-
-# My app will send the email and password data as a request body and this
-# will respond with a response body. Requests must not use the GET request
-# it causes undefined behavior
 from typing import Annotated
+import psycopg
 from fastapi import FastAPI, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 import bcrypt
 from pydantic import BaseModel
 
 mock_db: dict[str, str] = {}
+
+DATABASE_URL = "postgresql://sjohns@localhost:5432/recipe_db"
+
+def get_db():
+    # Open connection for the request and automatically close when done
+    with psycopg.connect(DATABASE_URL) as conn:
+        yield conn
 
 class UserAccount(BaseModel):
     email: str
