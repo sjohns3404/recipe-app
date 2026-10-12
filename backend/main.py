@@ -12,7 +12,6 @@ DATABASE_URL = "postgresql://sjohns@localhost:5432/recipe_db"
 def get_db():
     # Open connection for the request and automatically close when done
     with psycopg.connect(DATABASE_URL) as conn:
-        print(f"-> PYTHON CONNECTED TO: Host={conn.info.host}, Port={conn.info.port}, DB={conn.info.dbname}, PID={conn.info.backend_pid}")
         yield conn
 
 class UserAccount(BaseModel):
@@ -54,7 +53,7 @@ async def sign_in_user(user: UserAccount, conn = Depends(get_db)):
         if cur.fetchone():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="An account with that email already exists."
+                detail="An account with that email already exists"
             )
         
         # Hash the password and store data in db
@@ -72,14 +71,19 @@ async def sign_in_user(user: UserAccount, conn = Depends(get_db)):
 
 
 @app.post("/login/")
-async def login_user(user: UserAccount):
-    if user.email not in mock_db:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Your email is not registered"
-        )
+async def login_user(user: UserAccount, conn = Depends(get_db)):
+    with conn.cursor() as cur:
+        cur.execute("SELECT id FROM users WHERE email = %s", (user.email,))
+        if not cur.fetchone():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Your email is not registered"
+            )
 
-    stored_hash = mock_db[user.email]
+        cur.execute("SELECT hashed_password FROM users WHERE email = %s", (user.email,))
+
+        stored_hash = cur.fetchone()[0]
+        print(stored_hash)
 
     if not verify_password(user.password, stored_hash):
         raise HTTPException(
@@ -87,6 +91,5 @@ async def login_user(user: UserAccount):
             detail="Your password is incorrect"
         )
 
-    print(f"User logged in: {user.email}")
     return {"message": "Login successful", "email": user.email}
 
