@@ -1,19 +1,18 @@
-# Blank database main.py file
-# Currently learning everything about FastAPI on their site and will be using this to test.
-
-# Python can use async/await in order to creat asynchronous functiosn on the backend
-# A coroutine is what is returned from an async await function
-
-# My app will send the email and password data as a request body and this
-# will respond with a response body. Requests must not use the GET request
-# it causes undefined behavior
 from typing import Annotated
-from fastapi import FastAPI, Query, HTTPException, status
+import psycopg
+from fastapi import FastAPI, Query, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import bcrypt
 from pydantic import BaseModel
 
 mock_db: dict[str, str] = {}
+
+DATABASE_URL = "postgresql://sjohns@localhost:5432/recipe_db"
+
+def get_db():
+    # Open connection for the request and automatically close when done
+    with psycopg.connect(DATABASE_URL) as conn:
+        yield conn
 
 class UserAccount(BaseModel):
     email: str
@@ -47,33 +46,44 @@ app.add_middleware(
 )
 
 @app.post("/signup/")
-async def sign_in_user(user: UserAccount):
-    # Check if user exists in db
-    if user.email in mock_db:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An account with this email already exists."
+async def sign_in_user(user: UserAccount, conn = Depends(get_db)):
+    print(f"CONNECTED TO DB: {conn.info.dbname} on host {conn.info.host}")
+    with conn.cursor() as cur:
+        cur.execute("SELECT id FROM users WHERE email = %s", (user.email,))
+        if cur.fetchone():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with that email already exists"
+            )
+        
+        # Hash the password and store data in db
+        hashed_pwd = hash_password(user.password)
+
+        cur.execute(
+            """
+            INSERT INTO users (email, hashed_password) VALUES(%s, %s)
+            """,
+            (user.email, hashed_pwd)
         )
-
-    # Hash the password and store data in db
-    hashed_pwd = hash_password(user.password)
-    mock_db[user.email] = hashed_pwd
-
-    print(f"User registered: {user.email}")
-    print(f"Current users in memory: {list(mock_db.keys())}")
+        conn.commit()
 
     return {"message": "User registered successfully", "email": user.email}
 
 
 @app.post("/login/")
-async def login_user(user: UserAccount):
-    if user.email not in mock_db:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Your email is not registered"
-        )
+async def login_user(user: UserAccount, conn = Depends(get_db)):
+    with conn.cursor() as cur:
+        cur.execute("SELECT id FROM users WHERE email = %s", (user.email,))
+        if not cur.fetchone():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Your email is not registered"
+            )
 
-    stored_hash = mock_db[user.email]
+        cur.execute("SELECT hashed_password FROM users WHERE email = %s", (user.email,))
+
+        stored_hash = cur.fetchone()[0]
+        print(stored_hash)
 
     if not verify_password(user.password, stored_hash):
         raise HTTPException(
@@ -81,6 +91,5 @@ async def login_user(user: UserAccount):
             detail="Your password is incorrect"
         )
 
-    print(f"User logged in: {user.email}")
     return {"message": "Login successful", "email": user.email}
 
