@@ -17,7 +17,6 @@ export default function LoginScreen() {
   
   const [failedCredentials, setFailedCredentials] = useState<string>("");
 
-
   // Function to receive Validation change and do something with it idk yet
   const handleEmailValidation = (isValid: boolean, text: string) => {
     setEmailData({isValid, text});
@@ -57,6 +56,7 @@ export default function LoginScreen() {
 
       if (response.ok) {
         console.log("Success:", data);
+        router.navigate("/home");
       } else {
         setFailedCredentials(data.detail || "Log in failed");
       }
