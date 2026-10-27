@@ -1,9 +1,12 @@
 import { Text, View, StyleSheet } from "react-native";
+import { useState } from "react";
 
 export default function HomeScreen() {
+    const [recipes, setRecipes] = useState([]);
+
     return (
         <View style={styles.container}>
-            <Text>Welcome to the Home Page!</Text>
+            <Text>You have no recipes yet</Text>
         </View>
     )
 }

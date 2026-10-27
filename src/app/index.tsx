@@ -1,4 +1,5 @@
 import { Text, View, StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
 import InputBox from "@/app/components/input-box";
 import SubmitButton from "@/app/components/submit-button";
@@ -10,6 +11,8 @@ export default function LoginScreen() {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}$/;
   const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   const [togglePassword, setTogglePassword] = useState<boolean>(true);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // State for email and password values and validity
   const [emailData, setEmailData] = useState({text: "", isValid: false});
@@ -56,7 +59,10 @@ export default function LoginScreen() {
 
       if (response.ok) {
         console.log("Success:", data);
-        router.navigate("/home");
+        // Save token/session in persistent storage
+        await AsyncStorage.setItem("userToken", data.token || "logged_in");
+
+        router.replace("/home");
       } else {
         setFailedCredentials(data.detail || "Log in failed");
       }
