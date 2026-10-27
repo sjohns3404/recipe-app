@@ -5,7 +5,7 @@ import InputBox from "@/app/components/input-box";
 import SubmitButton from "@/app/components/submit-button";
 import { Link, router } from "expo-router";
 
-const API_URL = "http://localhost:8000/login/";
+const API_URL = "http://192.168.1.25:8000/login/";
 
 export default function LoginScreen() {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}$/;
