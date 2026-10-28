@@ -1,15 +1,27 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { router, useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
   const recipes: any[] = [];
+
+  const handleLogout = async () => {
+    try {
+        await AsyncStorage.removeItem("userToken");
+
+        router.replace("/");
+    } catch(error) {
+        console.error("Failed to logout", error);
+    }
+  }
 
   return (
     <View style={styles.container}>
       {recipes.length === 0 ? (
         <View style={styles.emptyStateContainer}>
           <Text style={styles.subtleText}>No recipes yet.</Text>
-          <TouchableOpacity style={styles.minimalButton}>
+          <TouchableOpacity onPress={handleLogout} style={styles.minimalButton}>
             <Text style={styles.buttonText}>+ Add Recipe</Text>
           </TouchableOpacity>
         </View>
