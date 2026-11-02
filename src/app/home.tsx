@@ -51,8 +51,9 @@ export default function HomeScreen() {
     const totalPages = Math.ceil(recipes.length / ITEMS_PER_PAGE);
 
     return (
-        <>
+        <View style={styles.pageNavContainer}>
             <TouchableOpacity
+                style={styles.pageButton}
                 onPress={goToPrevPage}
                 disabled={currentPage === 1}
             >
@@ -63,6 +64,7 @@ export default function HomeScreen() {
                 Array.from({length: totalPages}, 
                     (v, i) => (
                         <TouchableOpacity
+                            style={styles.pageButton}
                             key={i}
                             onPress={ () => goToPageNum(i + 1)}
                         >
@@ -73,12 +75,13 @@ export default function HomeScreen() {
             }
             
             <TouchableOpacity
+                style={styles.pageButton}
                 onPress={goToNextPage}
                 disabled={currentPage === totalPages}
             >
                 <Text>Next</Text>
             </TouchableOpacity>
-        </>
+        </View>
     )
   }
 
@@ -111,8 +114,8 @@ export default function HomeScreen() {
         </View>
       ) : (
         <>
-            {renderRecipes()}
             {renderPageControls()}
+            {renderRecipes()}
         </>
         
       )}
@@ -136,7 +139,7 @@ const styles = StyleSheet.create({
   },
   topLeftLogout: {
     position: 'absolute',
-    top: 30,
+    top: 40,
     left: 20,
     zIndex: 10,
     paddingVertical: 4,
@@ -199,5 +202,20 @@ const styles = StyleSheet.create({
     color: '#636e72',
     fontSize: 14,
     fontWeight: '500',
+  },
+  pageNavContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    paddingVertical: 10,
+    marginTop: 8,
+  },
+  pageButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "black",
   },
 });
