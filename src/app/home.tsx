@@ -3,6 +3,8 @@ import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react
 import { router } from "expo-router";
 import { BlurView } from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import SearchBar from "@/app/components/search-bar";
+import { submitLabel } from '@expo/ui/swift-ui/modifiers';
 
 // Dedicated Recipe Card Component for testing
 function RecipeCard({ name, handleCardClick }: { name: string; handleCardClick: () => void }) {
@@ -25,6 +27,44 @@ export default function HomeScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [validUrl, setValidUrl] = useState<boolean>(false);
+
+  type UrlValidationResult = {
+    isSafe: boolean;
+    sanitizedUrl: string;
+  };
+
+  const validateUrl = (input: string): UrlValidationResult => {
+    const trimmed = input.trim();
+    const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/;
+
+    if (trimmed.toLowerCase().startsWith("javascript:") || trimmed.toLowerCase().startsWith("data:")) {
+        return { isSafe: false, sanitizedUrl: '' };
+    }
+
+    let finalUrl = trimmed;
+    const isValidFormat = urlRegex.test(finalUrl)
+
+    return {
+        isSafe: isValidFormat,
+        sanitizedUrl: isValidFormat ? finalUrl : ''
+    };
+  };
+
+  const handleUrlSubmit = (cleanUrl: string) => {
+    setRecipes((prev) => [
+        ...prev,
+        {
+            id: Date.now(),
+            name: cleanUrl,
+        }
+    ]);
+
+    console.log("Added recipe", cleanUrl);
+
+    setShowModal(false);
+  };
+
 
   // Navigation functions
   function goToNextPage() {
@@ -107,27 +147,10 @@ export default function HomeScreen() {
     }
   };
 
-  const handleAddRecipe = () => {
-    setRecipes((prev) => [
-            ...prev, 
-            {
-                id: Date.now(), 
-                name: `Template recipe #${prev.length + 1}`
-            }
-        ]);
-  };
-
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={handleLogout} style={styles.topLeftLogout}>
         <Text style={styles.logoutText}>← Log Out</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-        onPress={() => setShowModal(true)} 
-        style={styles.topRightSearch}
-      >
-        <Text style={styles.logoutText}>Search Recipes</Text>
       </TouchableOpacity>
 
       <Modal
@@ -139,7 +162,11 @@ export default function HomeScreen() {
         }}>
             <View style={styles.centeredView}>
                 <View style={styles.modalView}>
-                    <Text>Test text for search bar</Text>
+                    <SearchBar
+                        input={"Enter the recipe URL"}
+                        validateUrl={validateUrl}
+                        onSubmit={handleUrlSubmit}
+                    />
                     <TouchableOpacity
                         style={styles.button}
                         onPress={() => setShowModal(!showModal)}>
@@ -162,7 +189,7 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.bottomContainer}>
-        <TouchableOpacity onPress={handleAddRecipe} style={styles.minimalButton}>
+        <TouchableOpacity onPress={() => setShowModal(true)} style={styles.minimalButton}>
           <Text style={styles.buttonText}>+ Add Recipe</Text>
         </TouchableOpacity>
       </View>
@@ -198,7 +225,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 20,
-    height: "15%",
+    height: "20%",
     maxWidth: 500,
     maxHeight: 250,
     alignItems: 'center',
