@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -13,7 +13,7 @@ function RecipeCard({ name, handleCardClick }: { name: string; handleCardClick: 
   );
 }
 
-// Recipe object
+// Recipe object template
 type Recipe = {
     id: number,
     name: string,
@@ -23,6 +23,7 @@ export default function HomeScreen() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   // Navigation functions
   function goToNextPage() {
@@ -120,6 +121,32 @@ export default function HomeScreen() {
         <Text style={styles.logoutText}>← Log Out</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity 
+        onPress={() => setShowModal(true)} 
+        style={styles.topRightSearch}
+      >
+        <Text style={styles.logoutText}>Search Recipes</Text>
+      </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showModal}
+        onRequestClose={() => {
+            setShowModal(!showModal);
+        }}>
+            <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                    <Text>Test text for search bar</Text>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => setShowModal(!showModal)}>
+                        <Text style={styles.buttonText}>Close</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+      </Modal>
+      
       {recipes.length === 0 ? (
         <View style={styles.emptyStateContainer}>
           <Text style={styles.subtleText}>No recipes yet.</Text>
@@ -149,6 +176,30 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     paddingBottom: 40,
   },
+  centeredView: {
+    flex: 1,
+    justifyContent: "flex-start",
+    paddingTop: 160,
+    alignItems: "center",
+  },
+  modalView: {
+    width: "90%",
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 20,
+    height: "15%",
+    maxWidth: 500,
+    maxHeight: 250,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   topLeftLogout: {
     position: 'absolute',
     top: 40,
@@ -160,6 +211,13 @@ const styles = StyleSheet.create({
     color: '#b2bec3',
     fontSize: 14,
     fontWeight: '500',
+  },
+  topRightSearch: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+    zIndex: 10,
+    paddingVertical: 4,
   },
   emptyStateContainer: {
     flex: 1,
@@ -210,6 +268,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
+  button: {
+    width: "30%",
+    height: "60%",
+    maxHeight: 50,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: "#dfe6e9",
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+  },
   buttonText: {
     color: '#636e72',
     fontSize: 14,
@@ -220,7 +290,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     alignContent: "center",
-    maxWidth: 480,
+    maxWidth: 550,
     width: "100%",
     paddingVertical: 10,
     marginTop: 8,
