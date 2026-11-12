@@ -4,17 +4,23 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Dedicated Recipe Card Component for testing
-function RecipeCard({ id, handleCardClick }: { id: number; handleCardClick: () => void }) {
+function RecipeCard({ name, handleCardClick }: { name: string; handleCardClick: () => void }) {
   return (
     <TouchableOpacity style={styles.card} onPress={handleCardClick}>
-      <Text style={styles.cardTitle}>Template Recipe #{id}</Text>
+      <Text style={styles.cardTitle}>{name}</Text>
       <Text style={styles.cardSubtitle}>Tap to view details</Text>
     </TouchableOpacity>
   );
 }
 
+// Recipe object
+type Recipe = {
+    id: number,
+    name: string,
+};
+
 export default function HomeScreen() {
-  const [recipes, setRecipes] = useState<number[]>([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
@@ -39,8 +45,8 @@ export default function HomeScreen() {
     return (
         <FlatList
             data={currentRecipes}
-            keyExtractor={(item) => item.toString()}
-            renderItem={({item}) => <RecipeCard id={item} handleCardClick={handleClickRecipe} />}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({item}) => <RecipeCard name={item.name} handleCardClick={handleClickRecipe} />}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
         />
@@ -99,7 +105,13 @@ export default function HomeScreen() {
   };
 
   const handleAddRecipe = () => {
-    setRecipes((prev) => [...prev, prev.length + 1]);
+    setRecipes((prev) => [
+            ...prev, 
+            {
+                id: Date.now(), 
+                name: `Template recipe #${prev.length + 1}`
+            }
+        ]);
   };
 
   return (
@@ -207,6 +219,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    alignContent: "center",
+    maxWidth: 480,
     width: "100%",
     paddingVertical: 10,
     marginTop: 8,
