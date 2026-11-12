@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { router } from "expo-router";
+import { BlurView } from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Dedicated Recipe Card Component for testing
@@ -88,6 +89,7 @@ export default function HomeScreen() {
             >
                 <Text>Next</Text>
             </TouchableOpacity>
+
         </View>
     )
   }
@@ -164,6 +166,15 @@ export default function HomeScreen() {
           <Text style={styles.buttonText}>+ Add Recipe</Text>
         </TouchableOpacity>
       </View>
+
+      { showModal && (
+        <BlurView
+            intensity={20}
+            tint="dark"
+            style={StyleSheet.absoluteFill}
+        />
+      )}
+
     </View>
   );
 }
