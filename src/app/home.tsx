@@ -6,11 +6,33 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import SearchBar from "@/app/components/search-bar";
 
 // Dedicated Recipe Card Component for testing
-function RecipeCard({ name, handleCardClick }: { name: string; handleCardClick: () => void }) {
+function RecipeCard({ 
+  name, 
+  handleCardClick, 
+  onDelete 
+}: { 
+  name: string; 
+  handleCardClick: () => void; 
+  onDelete: () => void; 
+}) {
   return (
     <TouchableOpacity style={styles.card} onPress={handleCardClick}>
-      <Text style={styles.cardTitle}>{name}</Text>
-      <Text style={styles.cardSubtitle}>Tap to view details</Text>
+      {/* Left side text wrapper */}
+      <View style={{ flex: 1, marginRight: 10 }}>
+        <Text style={styles.cardTitle} numberOfLines={1}>{name}</Text>
+        <Text style={styles.cardSubtitle}>Tap to view details</Text>
+      </View>
+
+      {/* Right side 'X' button - perfectly centered vertically by the card's alignItems: 'center' */}
+      <TouchableOpacity 
+        style={styles.deleteButton} 
+        onPress={(e) => {
+          e.stopPropagation(); // Stops card click from firing when hitting X
+          onDelete();
+        }}
+      >
+        <Text style={styles.deleteButtonText}>✕</Text>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 }
@@ -151,7 +173,12 @@ export default function HomeScreen() {
         <FlatList
             data={currentRecipes}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({item}) => <RecipeCard name={item.name} handleCardClick={handleClickRecipe} />}
+            renderItem={({item}) => 
+              <RecipeCard 
+                name={item.name} 
+                handleCardClick={handleClickRecipe} 
+                onDelete={() => {console.log("Deleted")}}
+              />}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
         />
@@ -338,6 +365,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#f0f0f0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   cardTitle: {
     fontSize: 16,
@@ -348,6 +378,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#b2bec3',
     marginTop: 4,
+  },
+  deleteButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#dfe6e9',
+    justifyContent: "center",
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: '#ff7675',
+    fontWeight: 'bold',
+    fontSize: 15,
+    lineHeight: 16,
   },
   subtleText: {
     color: '#b2bec3',
