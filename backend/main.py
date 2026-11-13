@@ -1,4 +1,10 @@
 from typing import Annotated
+from recipe_scrapers import scrape_me
+from recipe_scrapers._exceptions import (
+    NoSchemaFoundInWildMode,
+    RecipeScrapersExceptions,
+    WebsiteNotImplementedError
+)
 import psycopg
 from fastapi import FastAPI, Query, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +24,8 @@ class UserAccount(BaseModel):
     email: str
     password: str
 
+class RecipeData(BaseModel):
+    cleanUrl: str
 
 def hash_password(password: str) -> str:
     password_bytes = password.encode("utf-8")
@@ -93,3 +101,33 @@ async def login_user(user: UserAccount, conn = Depends(get_db)):
 
     return {"message": "Login successful", "email": user.email}
 
+@app.post("/recipe/")
+async def scrape_recipe(recipe: RecipeData):
+    try:
+        scraper = scrape_me(recipe.cleanUrl)
+
+        return {
+            "Title": scraper.title(), 
+            "Ingredients": scraper.ingredients(),
+            "Instructions": scraper.instructions()
+        }
+    except WebsiteNotImplementedError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"This website is not supported: {recipe.validUrl}"
+        )
+    except NoSchemaFoundInWildMode:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"No recipe schema was found on: {recipe.validUrl}"
+        )
+    except RecipeScrapersExceptions as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Failed to parse the recipe from this website: {recipe.validUrl}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred while fetching the recipe. {str(e)}"
+        )

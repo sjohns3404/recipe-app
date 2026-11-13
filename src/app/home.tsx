@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { router } from "expo-router";
 import { BlurView } from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SearchBar from "@/app/components/search-bar";
-import { submitLabel } from '@expo/ui/swift-ui/modifiers';
 
 // Dedicated Recipe Card Component for testing
 function RecipeCard({ name, handleCardClick }: { name: string; handleCardClick: () => void }) {
@@ -20,7 +19,12 @@ function RecipeCard({ name, handleCardClick }: { name: string; handleCardClick: 
 type Recipe = {
     id: number,
     name: string,
+    ingredients: string[],
+    instructions: string[],
+    url: string,
 };
+
+const API_URL = "http://192.168.1.25:8000/recipe/";
 
 export default function HomeScreen() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -33,6 +37,28 @@ export default function HomeScreen() {
     isSafe: boolean;
     sanitizedUrl: string;
   };
+  
+  // Loads in recipes directly after rendering component
+  useEffect(() => {
+    const loadStoredRecipes = async () => {
+      try {
+        const storedData = await AsyncStorage.getItem("recipe-list");
+        if (storedData) {
+          const parsedRecipes = JSON.parse(storedData);
+          if (Array.isArray(parsedRecipes)) {
+            setRecipes(parsedRecipes);
+          } else {
+            console.log("Found corrupted non-array data in storage");
+            setRecipes([]);
+            await AsyncStorage.removeItem("recipe-list");
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load stored recipes:", error);
+      }
+    };
+    loadStoredRecipes();
+  }, []);
 
   const validateUrl = (input: string): UrlValidationResult => {
     const trimmed = input.trim();
@@ -51,20 +77,57 @@ export default function HomeScreen() {
     };
   };
 
-  const handleUrlSubmit = (cleanUrl: string) => {
-    setRecipes((prev) => [
-        ...prev,
-        {
-            id: Date.now(),
-            name: cleanUrl,
-        }
-    ]);
+  const handleUrlSubmit = async (cleanUrl: string) => {
+    const isDuplicate = recipes.some((recipe) => recipe.url === cleanUrl);
 
-    console.log("Added recipe", cleanUrl);
+    if (isDuplicate) {
+      alert("This recipe is already in your library!");
+      return;
+    }
+    
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cleanUrl: cleanUrl,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Successfully found recipe", data.Title);
+        const newRecipe: Recipe = {
+          id: Date.now(),
+          name: data.Title,
+          ingredients: data.Ingredients,
+          instructions: data.Instructions,
+          url: cleanUrl
+        }
+
+        const updatedRecipes = [...recipes, newRecipe];
+
+        try {
+          await AsyncStorage.setItem("recipe-list", JSON.stringify(updatedRecipes));
+
+          setRecipes(updatedRecipes);
+        } catch (error) {
+          console.error("Failed to store your recipe locally:", error);
+          alert("Could not save your recipe locally");
+        }
+      } else {
+        console.log(data.detail);
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      console.log("Unable to connect to server.");
+    }
 
     setShowModal(false);
   };
-
 
   // Navigation functions
   function goToNextPage() {
