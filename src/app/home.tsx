@@ -4,19 +4,19 @@ import { BlurView } from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SearchBar from "@/app/components/search-bar";
 
-// Dedicated Recipe Card Component for testing
-function RecipeCard({ 
+function RecipeCard({
+  id,
   name, 
   handleCardClick, 
   onDelete 
-}: { 
+}: {
+  id: number;
   name: string; 
   handleCardClick: () => void; 
-  onDelete: () => void; 
+  onDelete: (id: number) => void; 
 }) {
   return (
     <TouchableOpacity style={styles.card} onPress={handleCardClick}>
-      {/* Left side text wrapper */}
       <View style={{ flex: 1, marginRight: 10 }}>
         <Text style={styles.cardTitle} numberOfLines={1}>{name}</Text>
         <Text style={styles.cardSubtitle}>Tap to view details</Text>
@@ -26,7 +26,7 @@ function RecipeCard({
         style={styles.deleteButton} 
         onPress={(e) => {
           e.stopPropagation();
-          onDelete();
+          onDelete(id);
         }}
       >
         <Text style={styles.deleteButtonText}>✕</Text>
@@ -51,7 +51,7 @@ export default function HomeScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [validUrl, setValidUrl] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<string>("");
 
   type UrlValidationResult = {
     isSafe: boolean;
@@ -62,7 +62,11 @@ export default function HomeScreen() {
   useEffect(() => {
     const loadStoredRecipes = async () => {
       try {
-        const storedData = await AsyncStorage.getItem("recipe-list");
+        const userEmail = await AsyncStorage.getItem("logged_in_user");
+        const user = userEmail?.split("@")[0] ?? 'guest' + Date.now();
+        setCurrentUser(user);
+
+        const storedData = await AsyncStorage.getItem("recipe-list-" + user);
         if (storedData) {
           const parsedRecipes = JSON.parse(storedData);
           if (Array.isArray(parsedRecipes)) {
@@ -70,7 +74,7 @@ export default function HomeScreen() {
           } else {
             console.log("Found corrupted non-array data in storage");
             setRecipes([]);
-            await AsyncStorage.removeItem("recipe-list");
+            await AsyncStorage.removeItem("recipe-list-" + user);
           }
         }
       } catch (error) {
@@ -131,9 +135,11 @@ export default function HomeScreen() {
         const updatedRecipes = [...recipes, newRecipe];
 
         try {
-          const userEmail = await AsyncStorage.getItem("logged_in_user");
-          const user = userEmail?.split("@")[0] ?? 'guest' + Date.now();
-          await AsyncStorage.setItem("recipe-list-" + user, JSON.stringify(updatedRecipes));
+
+          await AsyncStorage.setItem(
+            "recipe-list-" + currentUser, 
+            JSON.stringify(updatedRecipes)
+          );
 
           setRecipes(updatedRecipes);
         } catch (error) {
@@ -174,7 +180,8 @@ export default function HomeScreen() {
             data={currentRecipes}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({item}) => 
-              <RecipeCard 
+              <RecipeCard
+                id={item.id}
                 name={item.name} 
                 handleCardClick={handleClickRecipe} 
                 onDelete={deleteRecipe}
@@ -228,13 +235,26 @@ export default function HomeScreen() {
     console.log("Clicked recipe!");
   }
 
-  const deleteRecipe = async () => {
-    console.log("Deleted");
+  const deleteRecipe = async (id: number) => {
+    const userToken = "recipe-list-" + currentUser;
+    try {
+      const updatedRecipes = recipes.filter((recipe) => recipe.id !== id)
+      const storageKey = "recipe-list-" + currentUser;
+
+      await AsyncStorage.setItem(storageKey, JSON.stringify(updatedRecipes));
+      setRecipes(updatedRecipes);
+      
+      console.log(`Deleted recipe with id: ${id}`);
+    } catch (error) {
+      console.error("Failed to delete recipe locally:", error);
+      alert("Could not delete your recipe.");
+    }
   }
 
   const handleLogout = async () => {
     try {
         await AsyncStorage.removeItem("userToken");
+        await AsyncStorage.removeItem("logged_in_user");
         router.replace("/");
     } catch(error) {
         console.error("Failed to logout", error);
