@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react'; import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { router } from "expo-router";
 import { BlurView } from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -23,11 +22,10 @@ function RecipeCard({
         <Text style={styles.cardSubtitle}>Tap to view details</Text>
       </View>
 
-      {/* Right side 'X' button - perfectly centered vertically by the card's alignItems: 'center' */}
       <TouchableOpacity 
         style={styles.deleteButton} 
         onPress={(e) => {
-          e.stopPropagation(); // Stops card click from firing when hitting X
+          e.stopPropagation();
           onDelete();
         }}
       >
@@ -133,7 +131,9 @@ export default function HomeScreen() {
         const updatedRecipes = [...recipes, newRecipe];
 
         try {
-          await AsyncStorage.setItem("recipe-list", JSON.stringify(updatedRecipes));
+          const userEmail = await AsyncStorage.getItem("logged_in_user");
+          const user = userEmail?.split("@")[0] ?? 'guest' + Date.now();
+          await AsyncStorage.setItem("recipe-list-" + user, JSON.stringify(updatedRecipes));
 
           setRecipes(updatedRecipes);
         } catch (error) {
@@ -177,7 +177,7 @@ export default function HomeScreen() {
               <RecipeCard 
                 name={item.name} 
                 handleCardClick={handleClickRecipe} 
-                onDelete={() => {console.log("Deleted")}}
+                onDelete={deleteRecipe}
               />}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
@@ -226,6 +226,10 @@ export default function HomeScreen() {
 
   const handleClickRecipe = () => {
     console.log("Clicked recipe!");
+  }
+
+  const deleteRecipe = async () => {
+    console.log("Deleted");
   }
 
   const handleLogout = async () => {

@@ -61,6 +61,7 @@ export default function LoginScreen() {
         console.log("Success:", data);
         // Save token/session in persistent storage
         await AsyncStorage.setItem("userToken", data.token || "logged_in");
+        await AsyncStorage.setItem("logged_in_user", data.email);
 
         router.replace("/home");
       } else {
