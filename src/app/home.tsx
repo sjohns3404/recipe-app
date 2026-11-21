@@ -24,7 +24,7 @@ function RecipeCard({
       </View>
 
       <TouchableOpacity 
-        style={styles.deleteButton} 
+        style={styles.deleteButton}
         onPress={(e) => {
           e.stopPropagation();
           onDelete(id);
