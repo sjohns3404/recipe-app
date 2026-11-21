@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   button: {
     fontSize: 14,
-    fontFamily: "Sans serif",
+    fontFamily: "Sans-serif",
     textDecorationLine: "underline",
     color: "#000",
   },

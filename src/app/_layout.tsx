@@ -18,6 +18,7 @@ export default function RootLayout() {
                 if (token && (!currentSegment || currentSegment === "index")) {
                     router.replace("/home");
                 }
+
             } catch (e) {
                 console.error("Failed to load session", e);
             } finally {
@@ -47,9 +48,10 @@ export default function RootLayout() {
                 headerShown: false,     
             }} 
         >
-            <Stack.Screen name="index" options={{ title: "Login Page" }}/>
-            <Stack.Screen name="home" options={{ title: "Home Page" }}/>
-            <Stack.Screen name="sign-in" options={{ title: "Sign up Page" }}/>
+            <Stack.Screen name="index" options={{ title: "Login Page" }} />
+            <Stack.Screen name="home" options={{ title: "Home Page" }} />
+            <Stack.Screen name="recipe-page" options={{ title: "Recipe Page"}} />
+            <Stack.Screen name="sign-in" options={{ title: "Sign up Page" }} />
         </Stack>
     );
 }

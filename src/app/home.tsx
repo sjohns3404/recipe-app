@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'; import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react'; 
+import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { router } from "expo-router";
 import { BlurView } from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,18 +13,18 @@ function RecipeCard({
 }: {
   id: number;
   name: string; 
-  handleCardClick: () => void; 
+  handleCardClick: (id: number) => void; 
   onDelete: (id: number) => void; 
 }) {
   return (
-    <TouchableOpacity style={styles.card} onPress={handleCardClick}>
+    <TouchableOpacity style={styles.card} onPress={() => handleCardClick(id)}>
       <View style={{ flex: 1, marginRight: 10 }}>
         <Text style={styles.cardTitle} numberOfLines={1}>{name}</Text>
         <Text style={styles.cardSubtitle}>Tap to view details</Text>
       </View>
 
       <TouchableOpacity 
-        style={styles.deleteButton} 
+        style={styles.deleteButton}
         onPress={(e) => {
           e.stopPropagation();
           onDelete(id);
@@ -231,14 +232,19 @@ export default function HomeScreen() {
     )
   }
 
-  const handleClickRecipe = () => {
+  const handleClickRecipe = (id: number) => {
     console.log("Clicked recipe!");
+
+    router.push({
+      pathname: "/recipe-page",
+      params: { id: id.toString(), currentUser},
+    });
   }
 
   const deleteRecipe = async (id: number) => {
     const userToken = "recipe-list-" + currentUser;
     try {
-      const updatedRecipes = recipes.filter((recipe) => recipe.id !== id)
+      const updatedRecipes = recipes.filter((recipe) => recipe.id !== id);
       const storageKey = "recipe-list-" + currentUser;
 
       await AsyncStorage.setItem(storageKey, JSON.stringify(updatedRecipes));
